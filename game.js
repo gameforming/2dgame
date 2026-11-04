@@ -9,10 +9,15 @@
   const $ = (id) => document.getElementById(id);
 
   const weapons = [
-    { name: 'EMBERBLADE', short: 'EMBER', color: '#ff9d62', glow: '#ff653d', damage: 15, range: 52, speed: 1, duration: 19, hit: 7, knock: 7, heavy: 31, heavyDamage: 33, special: 'SOLAR BREAK' },
-    { name: 'MOONPIERCER', short: 'MOON', color: '#8bdcf0', glow: '#47bde7', damage: 21, range: 76, speed: 0.88, duration: 25, hit: 10, knock: 11, heavy: 36, heavyDamage: 39, special: 'LUNAR LANCE' },
-    { name: 'FANG & FURY', short: 'FANG', color: '#df9ce8', glow: '#bd68de', damage: 10, range: 44, speed: 1.28, duration: 15, hit: 5, knock: 5, heavy: 25, heavyDamage: 25, special: 'PHANTOM RUSH' },
-    { name: 'TITAN MAUL', short: 'TITAN', color: '#e7c58a', glow: '#eaa84b', damage: 25, range: 58, speed: 0.76, duration: 31, hit: 15, knock: 16, heavy: 44, heavyDamage: 52, special: 'EARTHSHATTER' }
+    { name: 'EMBERBLADE', short: 'EMBER', style: 'sword', color: '#ff9d62', glow: '#ff653d', damage: 15, range: 52, speed: 1, duration: 19, hit: 7, knock: 7, heavy: 31, heavyDamage: 33, special: 'SOLAR BREAK', specialRange: 175, specialDamage: 62 },
+    { name: 'MOONPIERCER', short: 'MOON', style: 'spear', color: '#8bdcf0', glow: '#47bde7', damage: 21, range: 76, speed: 0.88, duration: 25, hit: 10, knock: 11, heavy: 36, heavyDamage: 39, special: 'LUNAR LANCE', specialRange: 235, specialDamage: 72 },
+    { name: 'FANG & FURY', short: 'FANG', style: 'sword', color: '#df9ce8', glow: '#bd68de', damage: 10, range: 44, speed: 1.28, duration: 15, hit: 5, knock: 5, heavy: 25, heavyDamage: 25, special: 'PHANTOM RUSH', specialRange: 145, specialDamage: 62 },
+    { name: 'TITAN MAUL', short: 'TITAN', style: 'hammer', color: '#e7c58a', glow: '#eaa84b', damage: 25, range: 58, speed: 0.76, duration: 31, hit: 15, knock: 16, heavy: 44, heavyDamage: 52, special: 'EARTHSHATTER', specialRange: 175, specialDamage: 100 },
+    { name: 'STORMCLEAVER', short: 'STORM', style: 'axe', color: '#a7d7ed', glow: '#62b9ef', damage: 19, range: 64, speed: 0.86, duration: 24, hit: 9, knock: 13, heavy: 38, heavyDamage: 48, special: 'THUNDERFALL', specialRange: 190, specialDamage: 92 },
+    { name: 'RIFT DAGGERS', short: 'RIFT', style: 'daggers', color: '#d7a0f2', glow: '#a968e8', damage: 9, range: 47, speed: 1.48, duration: 13, hit: 4, knock: 5, heavy: 23, heavyDamage: 24, special: 'ECHO FLURRY', specialRange: 155, specialDamage: 74 },
+    { name: 'FROST REPEATER', short: 'FROST', style: 'crossbow', color: '#a9e7ee', glow: '#61cbe5', damage: 17, range: 240, speed: 0.94, duration: 20, hit: 8, knock: 7, heavy: 32, heavyDamage: 38, special: 'GLACIAL VOLLEY', specialRange: 255, specialDamage: 88, projectile: { speed: 5.5, size: 3, life: 76, pierce: false } },
+    { name: 'SUNWEAVER', short: 'SUN', style: 'staff', color: '#ffd17a', glow: '#ff9c4f', damage: 15, range: 205, speed: 1.02, duration: 18, hit: 7, knock: 8, heavy: 30, heavyDamage: 34, special: 'SOLSTICE NOVA', specialRange: 215, specialDamage: 82, projectile: { speed: 4.5, size: 4, life: 78, pierce: true } },
+    { name: 'VOIDREAVER', short: 'VOID', style: 'scythe', color: '#c5a4ff', glow: '#8a5cff', damage: 18, range: 88, speed: 0.92, duration: 23, hit: 9, knock: 12, heavy: 41, heavyDamage: 46, special: 'ECLIPSE HARVEST', specialRange: 205, specialDamage: 96 }
   ];
 
   const keys = Object.create(null);
@@ -34,6 +39,7 @@
   let player;
   let enemies = [];
   let projectiles = [];
+  let pickups = [];
   let particles = [];
   let texts = [];
   let scenery = [];
@@ -51,7 +57,7 @@
   function freshPlayer() {
     return {
       x: 72, y: FLOOR, vy: 0, face: 1, hp: 100, maxHp: 100,
-      meter: 0, weapon: 0, attack: null, attackCd: 0, combo: 0,
+      meter: 0, weapon: 0, attack: null, attackCd: 0, combo: 0, potions: 2, potionCd: 0,
       invuln: 0, dash: 0, dashCd: 0, block: false, onGround: true,
       walk: 0, hurt: 0, dead: false, jumpLock: false
     };
@@ -59,7 +65,7 @@
 
   function resetGame() {
     player = freshPlayer();
-    enemies = []; projectiles = []; particles = []; texts = [];
+    enemies = []; projectiles = []; pickups = []; particles = []; texts = [];
     cameraX = 0; shake = 0; flash = 0; score = 0; kills = 0;
     waveIndex = 0; activeWave = 0; bossSpawned = false; bossDefeated = false; bossRef = null;
     clock = 0;
@@ -82,7 +88,7 @@
         hit: [115, 47, .12, 'sawtooth'], heavy: [82, 28, .24, 'square'], dash: [240, 660, .10, 'sine'],
         jump: [180, 320, .12, 'triangle'], hurt: [150, 65, .22, 'sawtooth'], parry: [520, 980, .13, 'triangle'],
         special: [72, 440, .42, 'sawtooth'], kill: [270, 650, .18, 'triangle'], start: [110, 440, .36, 'sine'],
-        boss: [55, 38, .5, 'square'], win: [220, 880, .65, 'triangle']
+        boss: [55, 38, .5, 'square'], win: [220, 880, .65, 'triangle'], potion: [440, 760, .18, 'sine']
       };
       const [from, to, duration, wave] = bank[type] || bank.hit;
       osc.type = wave; osc.frequency.setValueAtTime(from, now); osc.frequency.exponentialRampToValueAtTime(Math.max(1, to), now + duration);
@@ -108,6 +114,25 @@
       particle(x, y, color, Math.cos(a) * s, Math.sin(a) * s, 12 + Math.random() * 24, 1 + Math.random() * size, .045);
     }
     particle(x, y, '#fff3d2', 0, 0, 8, size * 2, 0, false);
+  }
+
+  function spawnPickup(x, amount = 1) {
+    pickups.push({ x, y: FLOOR - 13, amount, life: 900, phase: Math.random() * 6.28 });
+    burst(x, FLOOR - 13, '#83e0a7', 7, 1.4, 2);
+  }
+
+  function usePotion() {
+    if (!player || player.dead || player.potions <= 0 || player.hp >= player.maxHp || player.potionCd > 0 || player.attack || player.dash > 0) return false;
+    const restored = Math.min(38, player.maxHp - player.hp);
+    player.potions--;
+    player.hp += restored;
+    player.potionCd = 34;
+    player.invuln = Math.max(player.invuln, 12);
+    player.hurt = 0;
+    burst(player.x, player.y - 25, '#83e0a7', 22, 2.8, 3);
+    addText(player.x, player.y - 58, `+${restored} HP`, '#9df0b5', 10, 48);
+    sound('potion');
+    return true;
   }
 
   function makeAmbient(initial = false) {
@@ -192,6 +217,11 @@
     addText(e.x, e.y - 61, e.type === 'boss' ? 'WARDEN BROKEN' : `+${e.score}`, '#f0c77f', e.type === 'boss' ? 12 : 9, 65);
     player.meter = Math.min(100, player.meter + (e.type === 'boss' ? 30 : 8));
     if (e.type === 'boss') {
+      spawnPickup(e.x - 18, 1); spawnPickup(e.x + 18, 1);
+    } else if (Math.random() < (e.type === 'brute' ? .62 : e.type === 'archer' ? .34 : .24)) {
+      spawnPickup(e.x, 1);
+    }
+    if (e.type === 'boss') {
       bossDefeated = true; mode = 'victory'; sound('win'); flash = .65; shake = 15;
     } else sound('kill');
   }
@@ -213,6 +243,14 @@
     const heavy = atk.kind === 'heavy';
     const range = (heavy ? w.range + 9 : w.range) + (player.combo === 2 && !heavy ? 7 : 0);
     const damage = heavy ? w.heavyDamage : Math.round(w.damage * (player.combo === 2 ? 1.35 : 1));
+    if (w.projectile) {
+      const spec = w.projectile;
+      const speed = spec.speed * (heavy ? 1.18 : 1);
+      projectiles.push({ x: player.x + player.face * 15, y: player.y - 31, vx: player.face * speed, vy: 0, damage, color: w.glow, size: spec.size + (heavy ? 2 : 0), life: spec.life, fromPlayer: true, pierce: spec.pierce, heavy, knock: w.knock * (heavy ? 1.65 : 1), hitEnemies: new Set() });
+      burst(player.x + player.face * 19, player.y - 31, w.color, heavy ? 11 : 6, 1.6, 2);
+      sound(heavy ? 'heavy' : 'hit');
+      return;
+    }
     let hitCount = 0;
     for (const e of enemies) {
       if (e.dead || Math.abs(e.y - player.y) > 38) continue;
@@ -242,19 +280,22 @@
 
   function specialHit() {
     const w = weapons[player.weapon];
-    const reach = player.weapon === 1 ? 235 : player.weapon === 2 ? 145 : 175;
+    const reach = w.specialRange;
     for (const e of enemies) {
       if (!e.dead && Math.abs(e.x - player.x) < reach && Math.abs(e.y - player.y) < 60) {
-        hitEnemy(e, player.weapon === 3 ? 100 : player.weapon === 1 ? 72 : 62, 18, w.glow, true);
+        hitEnemy(e, w.specialDamage, 18, w.glow, true);
       }
     }
-    if (player.weapon === 1) {
-      for (let i = 0; i < 15; i++) particle(player.x + player.face * (i * 13), player.y - 30, '#a5eeff', player.face * 3, (Math.random() - .5) * 2, 24, 3, 0);
-    } else if (player.weapon === 2) {
-      for (let i = 0; i < 28; i++) {
-        const a = (i / 28) * Math.PI * 2;
-        particle(player.x, player.y - 25, '#e8aeef', Math.cos(a) * 4, Math.sin(a) * 2.8, 26, 3, 0);
+    if (w.style === 'spear' || w.style === 'crossbow') {
+      for (let i = 0; i < 22; i++) particle(player.x + player.face * (i * 10), player.y - 30 + (Math.random() - .5) * 9, w.color, player.face * 2.8, (Math.random() - .5) * 1.5, 24, 3, 0);
+    } else if (w.style === 'daggers') {
+      for (let i = 0; i < 36; i++) {
+        const a = (i / 36) * Math.PI * 2;
+        particle(player.x, player.y - 25, w.color, Math.cos(a) * 4, Math.sin(a) * 2.8, 26, 3, 0);
       }
+    } else if (w.style === 'axe') {
+      for (let i = 0; i < 18; i++) particle(player.x + player.face * (8 + i * 5), FLOOR - 3, '#a7d7ed', player.face * (1 + Math.random() * 2), -Math.random() * 3, 28, 3, .12);
+      shake = 17;
     } else {
       for (let i = 0; i < 40; i++) {
         const a = (i / 40) * Math.PI * 2;
@@ -274,16 +315,23 @@
     if (p.hurt > 0) p.hurt -= dt;
     if (p.attackCd > 0) p.attackCd -= dt;
     if (p.dashCd > 0) p.dashCd -= dt;
+    if (p.potionCd > 0) p.potionCd -= dt;
     if (p.dash > 0) p.dash -= dt;
 
     if (pressed('1')) p.weapon = 0;
     if (pressed('2')) p.weapon = 1;
     if (pressed('3')) p.weapon = 2;
     if (pressed('4')) p.weapon = 3;
+    if (pressed('5')) p.weapon = 4;
+    if (pressed('6')) p.weapon = 5;
+    if (pressed('7')) p.weapon = 6;
+    if (pressed('8')) p.weapon = 7;
+    if (pressed('9')) p.weapon = 8;
 
     if (pressed('j')) beginAttack('normal');
     if (pressed('k')) beginAttack('heavy');
     if (pressed('u')) doSpecial();
+    if (pressed('h')) usePotion();
     if (pressed('l') && p.dashCd <= 0 && p.dash <= 0 && !p.attack) {
       p.dash = 10; p.dashCd = 52; p.invuln = Math.max(p.invuln, 16);
       sound('dash');
@@ -424,10 +472,20 @@
     for (const p of projectiles) {
       p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt;
       p.vy += (p.gravity || 0) * dt;
-      if (!p.dead && Math.abs(p.x - player.x) < 15 && Math.abs(p.y - (player.y - 25)) < 17) {
+      if (p.fromPlayer) {
+        for (const e of enemies) {
+          if (e.dead || p.hitEnemies.has(e)) continue;
+          const targetY = e.y - (e.type === 'boss' ? 46 : 25);
+          if (Math.abs(p.x - e.x) < (e.type === 'boss' ? 23 : 15) && Math.abs(p.y - targetY) < (e.type === 'boss' ? 42 : 20)) {
+            hitEnemy(e, p.damage, p.knock || 6, p.color, !!p.heavy);
+            p.hitEnemies.add(e);
+            if (!p.pierce) { p.dead = true; break; }
+          }
+        }
+      } else if (!p.dead && Math.abs(p.x - player.x) < 15 && Math.abs(p.y - (player.y - 25)) < 17) {
         hurtPlayer(p.damage, p.x, p.size > 5); p.dead = true;
       }
-      if (Math.random() < .55) particle(p.x, p.y, p.color, -p.vx * .12, -p.vy * .12, 9, 2, 0);
+      if (Math.random() < .7) particle(p.x, p.y, p.color, -p.vx * .12, -p.vy * .12, 10, p.fromPlayer ? 2.5 : 2, 0);
     }
     projectiles = projectiles.filter(p => p.life > 0 && !p.dead && p.x > cameraX - 70 && p.x < cameraX + W + 100);
   }
@@ -448,6 +506,17 @@
     }
     updateEnemies(dt);
     updateProjectiles(dt);
+    for (const item of pickups) {
+      item.life -= dt; item.phase += .07 * dt;
+      if (Math.abs(item.x - player.x) < 21 && Math.abs(item.y - (player.y - 12)) < 39 && player.potions < 3) {
+        player.potions = Math.min(3, player.potions + item.amount);
+        item.dead = true;
+        burst(item.x, item.y, '#9df0b5', 16, 2.3, 3);
+        addText(item.x, item.y - 23, 'FLASK +1', '#a9f4bd', 9, 42);
+        sound('potion');
+      }
+    }
+    pickups = pickups.filter(item => item.life > 0 && !item.dead);
     enemies = enemies.filter(e => !e.dead || e.type === 'boss' && !bossDefeated);
     for (const p of particles) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.gravity * dt; p.life -= dt; }
     particles = particles.filter(p => p.life > 0);
@@ -594,6 +663,16 @@
         rect(11, -32 + armRaise, 3, 29, '#80644d'); rect(12, -58 + armRaise, 2, 29, wc); rect(10, -62 + armRaise, 6, 5, '#e8e1d1');
       } else if (p.weapon === 3) {
         rect(10, -39 + armRaise, 8, 8, '#77624c'); rect(9, -57 + armRaise, 11, 15, wc); rect(11, -62 + armRaise, 7, 5, '#f3e3bd');
+      } else if (p.weapon === 4) {
+        rect(10, -38 + armRaise, 4, 12, '#80654e'); rect(11, -62 + armRaise, 4, 25, '#9db5c0'); rect(7, -66 + armRaise, 15, 11, wc); rect(7, -66 + armRaise, 4, 11, '#e8f2f5');
+      } else if (p.weapon === 5) {
+        rect(10, -37 + armRaise, 3, 15, '#79624b'); rect(12, -53 + armRaise, 2, 17, wc); rect(7, -34 + armRaise, 3, 13, '#79624b'); rect(6, -49 + armRaise, 2, 16, wc);
+      } else if (p.weapon === 6) {
+        rect(9, -37 + armRaise, 12, 4, '#8d755b'); rect(12, -50 + armRaise, 5, 18, wc); rect(8, -54 + armRaise, 13, 3, '#d8edf0'); rect(13, -61 + armRaise, 2, 8, '#d8edf0');
+      } else if (p.weapon === 7) {
+        rect(12, -64 + armRaise, 3, 47, '#9d7651'); rect(9, -67 + armRaise, 9, 7, wc); rect(11, -70 + armRaise, 5, 4, '#fff0bd');
+      } else if (p.weapon === 8) {
+        rect(12, -62 + armRaise, 3, 48, '#78618f'); rect(9, -68 + armRaise, 9, 7, '#d8c9fa'); rect(17, -72 + armRaise, 8, 4, wc); rect(21, -78 + armRaise, 7, 5, wc); rect(17, -79 + armRaise, 5, 4, '#f0e8ff'); rect(9, -70 + armRaise, 5, 4, '#f0e8ff');
       } else {
         rect(11, -31 + armRaise, 3, 15, '#896b50'); rect(12, -57 + armRaise, 2, 28, wc); rect(10, -60 + armRaise, 6, 4, '#e4e8e9');
       }
@@ -627,6 +706,12 @@
       ctx.strokeStyle = w.glow; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(0, 0, r, -.85, Math.PI * 1.2); ctx.stroke();
       ctx.strokeStyle = '#fff0cd'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(0, 0, r + 7, -.65, Math.PI * 1.3); ctx.stroke();
       ctx.globalAlpha = 1;
+    } else if (w.projectile) {
+      const alpha = Math.sin(Math.min(1, progress) * Math.PI) * .8;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = w.glow; ctx.fillRect(12, -4, a.kind === 'heavy' ? 16 : 10, 3);
+      ctx.fillStyle = '#fff2d5'; ctx.fillRect(18, -5, 4, 5);
+      ctx.globalAlpha = 1;
     } else {
       const alpha = Math.sin(Math.min(1, progress) * Math.PI) * .9;
       const len = (a.kind === 'heavy' ? 60 : 43) + (player.combo === 2 ? 10 : 0);
@@ -640,6 +725,17 @@
       ctx.globalAlpha = 1;
     }
     ctx.restore();
+  }
+
+  function drawPickup(item) {
+    const x = item.x - cameraX, y = item.y + Math.sin(item.phase) * 2.3;
+    if (x < -15 || x > W + 15) return;
+    ctx.globalAlpha = .2 + Math.sin(item.phase * 1.4) * .06;
+    ctx.fillStyle = '#79e0a0'; ctx.beginPath(); ctx.arc(x, y, 10, 0, Math.PI * 2); ctx.fill();
+    ctx.globalAlpha = 1;
+    rect(x - 4, y - 6, 8, 11, '#376f55'); rect(x - 3, y - 8, 6, 3, '#b9edc6');
+    rect(x - 2, y - 4, 4, 7, '#8fe6a8'); rect(x - 1, y - 2, 2, 3, '#e4ffe9');
+    rect(x + 4, y - 7, 3, 3, '#d6f7df');
   }
 
   function drawProjectile(p) {
@@ -688,11 +784,16 @@
     rect(150, 13, 88 * (player.meter / 100), 3, '#8a6bd0');
     if (player.meter >= 100) { ctx.globalAlpha = .7 + Math.sin(clock * .3) * .3; rect(147, 10, 94, 9, 'rgba(190,151,242,.13)'); ctx.globalAlpha = 1; }
     ctx.fillStyle = '#b4a7d7'; ctx.font = '6px monospace'; ctx.fillText(player.meter >= 100 ? 'SPECIAL READY  [U]' : 'RESOLVE', 149, 27);
+    // Clickable flask counter.
+    rect(148, 34, 77, 19, 'rgba(7,13,23,.86)'); rect(150, 36, 14, 15, '#28513f');
+    rect(154, 37, 6, 3, '#b9edc6'); rect(153, 40, 8, 9, '#78cf91'); rect(155, 43, 4, 4, '#e4ffe9');
+    ctx.fillStyle = player.potions > 0 ? '#b9edc6' : '#738294'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'left'; ctx.fillText(`H  x${player.potions}`, 168, 46);
+    if (player.potionCd > 0) { ctx.globalAlpha = .35; rect(148, 34, 77, 19, '#07101c'); ctx.globalAlpha = 1; }
     // Weapon readout.
     const w = weapons[player.weapon];
     rect(9, 53, 131, 19, 'rgba(7,13,23,.8)'); rect(13, 57, 10, 10, w.color);
     ctx.fillStyle = '#e4eaf0'; ctx.font = 'bold 8px monospace'; ctx.fillText(w.name, 28, 65);
-    ctx.fillStyle = '#9aabc0'; ctx.font = '6px monospace'; ctx.textAlign = 'right'; ctx.fillText('[1] [2] [3] [4]', 134, 65);
+    ctx.fillStyle = '#9aabc0'; ctx.font = '6px monospace'; ctx.textAlign = 'right'; ctx.fillText('[1–9] / WHEEL', 134, 65);
     // Score / kills.
     ctx.textAlign = 'right'; ctx.fillStyle = '#d0d7e1'; ctx.font = 'bold 8px monospace'; ctx.fillText(`SCORE ${String(score).padStart(6, '0')}`, 468, 16);
     ctx.fillStyle = '#9dacc0'; ctx.font = '7px monospace'; ctx.fillText(`SOULS ${String(kills).padStart(2, '0')}`, 468, 27);
@@ -700,6 +801,15 @@
     if (player.dashCd > 0) {
       rect(9, 76, 38, 3, '#282f3d'); rect(9, 76, 38 * (1 - player.dashCd / 52), 3, '#7bcbd4');
       ctx.fillStyle = '#8ba4b5'; ctx.font = '6px monospace'; ctx.textAlign = 'left'; ctx.fillText('DASH', 51, 79);
+    }
+    // Nine-slot weapon hotbar (also clickable with the mouse).
+    const slotW = 18, slotGap = 2, barW = weapons.length * slotW + (weapons.length - 1) * slotGap;
+    const barX = Math.round((W - barW) / 2), barY = 248;
+    for (let i = 0; i < weapons.length; i++) {
+      const x = barX + i * (slotW + slotGap), selected = i === player.weapon;
+      rect(x, barY, slotW, 15, selected ? '#493b34' : 'rgba(7,13,23,.82)');
+      rect(x, barY, slotW, 2, selected ? weapons[i].color : '#39465a');
+      ctx.fillStyle = selected ? '#fff0d2' : '#9aa9bb'; ctx.font = 'bold 7px monospace'; ctx.textAlign = 'center'; ctx.fillText(String(i + 1), x + slotW / 2, barY + 11);
     }
     if (activeWave > 0 && !bossSpawned && enemies.filter(e => !e.dead).length === 0 && waveIndex < waveEvents.length) {
       ctx.fillStyle = '#b8c2cf'; ctx.font = '7px monospace'; ctx.textAlign = 'center'; ctx.fillText('GEBIED VEILIG — VOORUIT!', 240, 28);
@@ -722,6 +832,8 @@
   }
 
   function render() {
+    const touchControls = $('touchControls');
+    if (touchControls) touchControls.style.display = mode === 'playing' ? '' : 'none';
     ctx.save();
     if (shake > .3) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake * .65);
     drawBackground();
@@ -733,14 +845,15 @@
         ctx.globalAlpha = .12; ctx.fillStyle = '#dc8158'; ctx.beginPath(); ctx.arc(ex, e.y - 30, 49, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha = 1;
       }
     }
+    for (const item of pickups) drawPickup(item);
     for (const e of enemies) if (!e.dead) drawHero(e, true);
     drawHero(player, false);
     drawAttackEffects();
     for (const p of projectiles) drawProjectile(p);
     drawParticles();
     if (mode === 'playing') drawHud();
-    if (mode === 'title') drawOverlay('ASHEN OATH', 'R I F T B O U N D   /   PIXEL ACTION FIGHTER', ['Vier wapens. Een vervloekt rijk. Geen genade.', 'Leer vijandpatronen, ontwijk en sla terug.', 'Tip: block op het juiste moment voor resolve.']);
-    if (mode === 'paused') drawOverlay('PAUSED', 'DE WERELD WACHT OP JE', ['Druk op P of ENTER om verder te gaan.', 'Wissel van wapen om je tactiek aan te passen.'], '#8bdce9');
+    if (mode === 'title') drawOverlay('ASHEN OATH', 'R I F T B O U N D   /   PIXEL ACTION FIGHTER', ['Acht wapens. Een vervloekt rijk. Geen genade.', 'Klik links voor aanval, rechts voor heavy strike.', 'Verzamel flacons en gebruik H om te genezen.']);
+    if (mode === 'paused') drawOverlay('PAUSED', 'DE WERELD WACHT OP JE', ['Druk op P of ENTER om verder te gaan.', 'Gebruik de muis of 1–8 om wapens te wisselen.', 'H gebruikt een genezende flacon.'], '#8bdce9');
     if (mode === 'gameover') drawOverlay('YOU FELL', 'THE ASHEN WARDEN REMAINS', [`Score  ${score}     Souls  ${kills}`, 'Bestudeer hun patronen. Probeer opnieuw.'], '#ec8d75');
     if (mode === 'victory') drawOverlay('OATH KEPT', 'THE WARDEN IS NO MORE', [`Score  ${score}     Souls  ${kills}`, 'De grenslanden zijn vrij... voorlopig.'], '#e8c27f');
     if (flash > 0) { ctx.globalAlpha = flash; ctx.fillStyle = '#fff0d8'; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
@@ -787,7 +900,36 @@
   }, { passive: false });
   window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
   window.addEventListener('blur', () => { for (const k of Object.keys(keys)) keys[k] = false; if (mode === 'playing') mode = 'paused'; });
-  canvas.addEventListener('pointerdown', () => { if (mode !== 'playing') startOrResume(); });
+  function canvasPosition(e) {
+    const r = canvas.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height };
+  }
+
+  canvas.addEventListener('pointerdown', (e) => {
+    if (mode !== 'playing') { startOrResume(); return; }
+    const point = canvasPosition(e);
+    // The flask counter and hotbar are actual mouse controls, not just decoration.
+    if (point.x >= 145 && point.x <= 229 && point.y >= 32 && point.y <= 55) { usePotion(); return; }
+    const slotW = 18, slotGap = 2, barW = weapons.length * slotW + (weapons.length - 1) * slotGap;
+    const barX = (W - barW) / 2, barY = 248;
+    if (point.y >= barY - 2 && point.y <= barY + 17 && point.x >= barX && point.x <= barX + barW) {
+      const slot = Math.floor((point.x - barX) / (slotW + slotGap));
+      if (slot >= 0 && slot < weapons.length) player.weapon = slot;
+      return;
+    }
+    if (point.y < 84) return;
+    if (point.x < player.x - cameraX) player.face = -1;
+    else if (point.x > player.x - cameraX) player.face = 1;
+    if (e.button === 0) beginAttack('normal');
+    else if (e.button === 2) beginAttack('heavy');
+    else if (e.button === 1) doSpecial();
+  });
+  canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+  canvas.addEventListener('wheel', (e) => {
+    if (mode !== 'playing') return;
+    e.preventDefault();
+    player.weapon = (player.weapon + (e.deltaY > 0 ? 1 : weapons.length - 1)) % weapons.length;
+  }, { passive: false });
 
   document.querySelectorAll('.touch-controls button').forEach((button) => {
     const k = button.dataset.key;
