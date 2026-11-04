@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#090d18">
+  <meta name="description" content="ASHEN OATH — een pixel-art fantasy action fighter. Speel gratis in je browser.">
+  <title>ASHEN OATH — Riftbound</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Ashen Oath home">
+        <span class="brand-mark">✦</span>
+        <span>ASHEN <b>OATH</b></span>
+      </a>
+      <div class="top-meta"><span class="live-dot"></span> SOLO CAMPAIGN <i>•</i> CHAPTER 01</div>
+      <button class="sound-button" id="soundButton" type="button" aria-label="Geluid aan of uit">♫ <span>GELUID AAN</span></button>
+    </header>
+
+    <section class="game-frame" id="gameFrame" aria-label="Ashen Oath game">
+      <canvas id="game" width="480" height="270" aria-label="ASHEN OATH game canvas"></canvas>
+      <div class="scanlines" aria-hidden="true"></div>
+      <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
+      <div class="corner corner-bl"></div><div class="corner corner-br"></div>
+      <div class="touch-controls" id="touchControls" aria-label="Touch controls">
+        <div class="touch-move">
+          <button data-key="a" aria-label="Links">◀</button>
+          <button data-key="d" aria-label="Rechts">▶</button>
+          <button data-key="w" aria-label="Spring">↟</button>
+        </div>
+        <div class="touch-actions">
+          <button data-key="shift" class="guard" aria-label="Blokkeren">◈</button>
+          <button data-key="j" class="attack" aria-label="Aanvallen">⚔</button>
+          <button data-key="k" class="heavy" aria-label="Zware aanval">✦</button>
+          <button data-key="l" class="dash" aria-label="Dash">»</button>
+          <button data-key="u" class="special" aria-label="Speciale aanval">✹</button>
+        </div>
+      </div>
+    </section>
+
+    <div class="underbar">
+      <div class="under-title"><span class="sigil">✧</span><span>THE SHATTERED FRONTIER</span></div>
+      <div class="under-hint">BESTUUR JE LOT <span>—</span> VERSLA DE WARDEN</div>
+      <button id="fullscreenButton" class="fullscreen-button" type="button">⛶ VOLLEDIG SCHERM</button>
+    </div>
+
+    <section class="info-grid">
+      <article class="info-card objective-card">
+        <div class="card-kicker">✦ JOUW MISSIE</div>
+        <h2>Breek de vloek.</h2>
+        <p>Vecht door de gevallen grenslanden, leer de patronen van je vijanden en vernietig de Ashen Warden.</p>
+      </article>
+      <article class="info-card arsenal-card">
+        <div class="card-kicker">✦ HET ARSENAAL</div>
+        <div class="weapon-list">
+          <div><kbd>1</kbd><span class="weapon-icon ember">⚔</span><span><b>Emberblade</b><small>Snel • gebalanceerd</small></span></div>
+          <div><kbd>2</kbd><span class="weapon-icon moon">➶</span><span><b>Moonpiercer</b><small>Lang bereik • precisie</small></span></div>
+          <div><kbd>3</kbd><span class="weapon-icon twin">✣</span><span><b>Fang &amp; Fury</b><small>Razendsnelle combo's</small></span></div>
+          <div><kbd>4</kbd><span class="weapon-icon titan">◆</span><span><b>Titan Maul</b><small>Langzaam • verwoestend</small></span></div>
+        </div>
+      </article>
+      <article class="info-card controls-card">
+        <div class="card-kicker">✦ CONTROLS</div>
+        <div class="control-list">
+          <div><span><kbd>A</kbd><kbd>D</kbd> / <kbd>←</kbd><kbd>→</kbd></span><small>BEWEGEN</small></div>
+          <div><span><kbd>W</kbd> / <kbd>SPACE</kbd></span><small>SPRINGEN</small></div>
+          <div><span><kbd>J</kbd></span><small>AANVAL / COMBO</small></div>
+          <div><span><kbd>K</kbd></span><small>ZWARE AANVAL</small></div>
+          <div><span><kbd>L</kbd></span><small>DASH / ONTKOM</small></div>
+          <div><span><kbd>SHIFT</kbd></span><small>BLOCK</small></div>
+          <div><span><kbd>U</kbd></span><small>SPECIAL (VOLLE METER)</small></div>
+          <div><span><kbd>P</kbd></span><small>PAUZE</small></div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer"><span>ASHEN OATH <i>©</i> 2026</span><span>GEMAAKT VOOR DEGENEN DIE BLIJVEN STAAN.</span><span>NO SERVERS. JUST SKILL.</span></footer>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
